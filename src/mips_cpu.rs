@@ -207,7 +207,7 @@ pub fn run(state: &mut MIPSState) {
 
 pub fn print_stack(state: &mut MIPSState) {
     let mut cur_sp = state.read_reg(30);
-    let end_mem = 8388608;
+    let end_mem = 16777216;
     
     trace!("----------------------------------+");
     trace!("{:<33} |", "STACK STATE:");
@@ -220,13 +220,15 @@ pub fn print_stack(state: &mut MIPSState) {
         }
         trace!(FMT_ADDR!(), cur_sp, format!("0x{:X}", state.read_mem(cur_sp)), "");
         cur_sp += 4;
-        chunk_size -= 4;
+        if chunk_size >= 4 {
+            chunk_size -= 4;
+        }
     }
     trace!("----------------------------------+");
 }
 
 pub fn print_heap(state: &mut MIPSState) {
-    let mut start_hp = 4194304;
+    let mut start_hp = 16777216/4;
     let end_hp = state.read_reg(28);
     
     trace!("----------------------------------+");
@@ -240,7 +242,9 @@ pub fn print_heap(state: &mut MIPSState) {
         }
         trace!(FMT_ADDR!(), start_hp, format!("0x{:X}", state.read_mem(start_hp)), "");
         start_hp += 4;
-        chunk_size -= 4;
+        if chunk_size >= 4 {
+            chunk_size -= 4;
+        }
     }
     trace!("----------------------------------+");
 }

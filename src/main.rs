@@ -43,15 +43,15 @@ fn mips_example() {
     let mut mem: Memory = Memory::from_binary("data/mips_output.bin");
     let heap_addr = mem.size();
     //println!("Heap Address Start: {}", heap_addr);
-    mem.resize(8388608);
+    mem.resize(16777216);
 
     let mut state: MIPSState = MIPSState::new(mem);
 
-    let input1 = 20;
-    let input2 = 0;
+    let input1 = 5;
+    let input2 = 3;
     state.write_reg(1, input1 as u32);
     state.write_reg(2, input2 as u32);
-    state.write_reg(30, 8388608);
+    state.write_reg(30, 16777216);
 
     mips_cpu::run(&mut state);
     println!("\n{}", state.read_reg(3) as i32);
