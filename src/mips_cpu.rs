@@ -186,8 +186,15 @@ pub fn run(state: &mut MIPSState) {
     let mut max_stack = 0;
     let mut min_heap = u32::MAX;
     let mut max_heap = 0;
+
+    let mut temp_sp = 0;
     while state.read_reg(PC) != termination_pc {
+        temp_sp = state.read_reg(30);
         step(state);
+        if temp_sp != state.read_reg(30) {
+            print_stack(state);
+            print_heap(state);
+        }
         min_stack = cmp::min(min_stack, state.read_reg(30));
         max_stack = cmp::max(max_stack, state.read_reg(30));
         min_heap = cmp::min(min_heap, state.read_reg(28));
