@@ -43,32 +43,4 @@ impl Memory {
     pub fn size(&self) -> u32 {
         self.mem.len() as u32
     }
-
-
-    pub fn print_bytes_binary(&self) {
-        for i in 0..self.size() {
-            println!("{:04X}: {:08b}", i, self.read(i));
-        }
-    }
-
-    pub fn print_bytes_hex(&self) {
-        for i in 0..self.size() {
-            println!("{:04X}: {:02X}", i, self.read(i));
-        }
-    }
-
-    pub fn print_words_binary(&self) {
-        assert!(self.size() % 4 == 0);
-        for i in (0..self.size()).step_by(4) {
-            println!("{:04X}:\t{:08b} {:08b} {:08b} {:08b}", i, self.read(i), self.read(i+1), self.read(i+2), self.read(i+3));
-        }
-    }
-
-    pub fn print_words_hex(&self) {
-        assert!(self.size() % 4 == 0);
-        for i in (0..self.size()).step_by(4) {
-            println!("{:04X}:\t{:02X} {:02X} {:02X} {:02X}", i, self.read(i), self.read(i+1), self.read(i+2), self.read(i+3));
-        }
-    }
-
 }

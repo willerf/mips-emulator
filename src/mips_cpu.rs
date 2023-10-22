@@ -1,6 +1,4 @@
-
-use log::{trace, debug, info, error};
-use std::cmp;
+use log::{debug, error};
 
 use crate::mips_state::MIPSState;
 use crate::mips_state::{PC, LO, HI};
@@ -113,8 +111,6 @@ pub fn step(state: &mut MIPSState) {
                 0b00000001000 => {
                     state.write_reg(PC, s);
                     debug!(FMT_ADDR!(), pc, format!("jr ${}", s_addr), format!("${:<2} <- {}", "PC", s));
-                    print_stack(state);
-                    print_heap(state);
                 }
 
                 // jalr
@@ -122,15 +118,11 @@ pub fn step(state: &mut MIPSState) {
                     state.write_reg(31, state.read_reg(PC));
                     state.write_reg(PC, s);
                     debug!(FMT_ADDR!(), pc, format!("jalr ${}", s_addr), format!("${:<2} <- {}; ${:<2} <- {}", "31", pc, "PC", s));
-                    print_stack(state);
-                    print_heap(state);
                     
                 }
 
                 // unknown instruction
                 x => {
-                    print_stack(state);
-                    print_heap(state);
                     error!("Unknown Instruction: {:032b}", x);
                     panic!();
                 }
@@ -169,8 +161,6 @@ pub fn step(state: &mut MIPSState) {
 
         // unknown instruction
         x => {
-            print_stack(state);
-            print_heap(state);
             error!("Unknown Instruction: {:032b}", x);
             panic!();
         }
@@ -182,94 +172,9 @@ pub fn run(state: &mut MIPSState) {
 
     state.write_reg(31, termination_pc);
     let mut cycles = 0;
-    let mut min_stack = u32::MAX;
-    let mut max_stack = 0;
-    let mut min_heap = u32::MAX;
-    let mut max_heap = 0;
 
-    let mut temp_sp = 0;
-    while state.read_reg(PC) != termination_pc {
-        temp_sp = state.read_reg(30);
+    while state.read_reg(PC) != termination_pc && cycles < 10_000 {
         step(state);
-        if temp_sp != state.read_reg(30) {
-            print_stack(state);
-            print_heap(state);
-        }
-        min_stack = cmp::min(min_stack, state.read_reg(30));
-        max_stack = cmp::max(max_stack, state.read_reg(30));
-        min_heap = cmp::min(min_heap, state.read_reg(28));
-        max_heap = cmp::max(max_heap, state.read_reg(28));
-        if state.read_reg(28) > state.read_reg(30) {
-            panic!("Stack overflow!");
-        }
         cycles += 1;
     }
-    println!("Execution completed in {} instructions!", cycles);
-    println!("Max stack memory: {} bytes", max_stack - min_stack);
-    println!("Max heap memory: {} bytes", max_heap - min_heap);
-
-    //print_stack(state);
-    //print_heap(state);
-}
-
-pub fn print_stack(state: &mut MIPSState) {
-    let mut cur_sp = state.read_reg(30);
-    let end_mem = 16777216;
-    
-    trace!("----------------------------------+");
-    trace!("{:<33} |", "STACK STATE:");
-
-    let mut chunk_size = 0;
-    while cur_sp < end_mem {
-        if chunk_size == 0 {
-            trace!("----------------------------------+");
-            chunk_size = state.read_mem(cur_sp);
-        }
-        trace!(FMT_ADDR!(), cur_sp, format!("0x{:X}", state.read_mem(cur_sp)), "");
-        cur_sp += 4;
-        if chunk_size >= 4 {
-            chunk_size -= 4;
-        }
-    }
-    trace!("----------------------------------+");
-}
-
-pub fn print_heap(state: &mut MIPSState) {
-    let mut start_hp = 16777216/4;
-    let end_hp = state.read_reg(28);
-    
-    trace!("----------------------------------+");
-    trace!("{:<33} |", "HEAP STATE:");
-
-    let mut chunk_size = 0;
-    while start_hp < end_hp {
-        if chunk_size == 0 {
-            trace!("----------------------------------+");
-            chunk_size = state.read_mem(start_hp);
-        }
-        trace!(FMT_ADDR!(), start_hp, format!("0x{:X}", state.read_mem(start_hp)), "");
-        start_hp += 4;
-        if chunk_size >= 4 {
-            chunk_size -= 4;
-        }
-    }
-    trace!("----------------------------------+");
-}
-
-pub fn print_frame(state: &mut MIPSState) {
-    info!("----------------------------------+");
-    info!("{:<33} |", "Enter procedure call!");
-    let chunk_size = state.read_mem(state.read_reg(30));
-    let num_params = (chunk_size - 8)/4;
-    for i in 0..num_params {
-        info!(FMT_ADDR!(), state.read_reg(30) + i*4 + 8, format!("Param {}: {}", i, state.read_mem(state.read_reg(30) + i*4 + 8) as i32), "");
-    }
-    debug!("----------------------------------+");
-}
-
-pub fn print_return(state: &mut MIPSState) {
-    info!("----------------------------------+");
-    info!("{:<33} |", "Exit procedure call!");
-    info!("{:<33} |", format!("Return: {}", state.read_reg(3)));
-    debug!("----------------------------------+");
 }

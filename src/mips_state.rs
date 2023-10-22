@@ -1,4 +1,3 @@
-
 use crate::memory::Memory;
 
 pub const PC: u32 = 32;
@@ -54,9 +53,4 @@ impl MIPSState {
     pub fn size(&self) -> u32 {
         self.mem.size()
     }
-
 }
-
-
-
-
