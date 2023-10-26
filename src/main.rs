@@ -18,15 +18,16 @@ fn main() {
     let input1 = args[2].parse::<i32>().unwrap();
     let input2 = args[3].parse::<i32>().unwrap();
 
+    let mem_size = 64 * 1024;
     let mut mem: Memory = Memory::from_binary(&file_name);
-    mem.resize(16 * 1024);
+    mem.resize(mem_size);
 
     let mut state: MIPSState = MIPSState::new(mem);
 
     state.write_reg(1, input1 as u32);
     state.write_reg(2, input2 as u32);
-    state.write_reg(30, 16 * 1024);
+    state.write_reg(30, mem_size);
 
     mips_cpu::run(&mut state);
-    std::process::exit(state.read_reg(3) as i32);
+    println!("{}", state.read_reg(3) as i32);
 }
