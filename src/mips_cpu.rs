@@ -171,10 +171,8 @@ pub fn run(state: &mut MIPSState) {
     let termination_pc: u32 = 0b11111110111000011101111010101101;
 
     state.write_reg(31, termination_pc);
-    let mut cycles = 0;
 
-    while state.read_reg(PC) != termination_pc && cycles < 10_000 {
+    while state.read_reg(PC) != termination_pc {
         step(state);
-        cycles += 1;
     }
 }
